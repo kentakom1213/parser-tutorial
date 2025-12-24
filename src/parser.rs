@@ -74,7 +74,7 @@ impl Parser {
         Ok(expr)
     }
     pub fn parse_term(&mut self) -> Result<Expr, ParseError> {
-        let mut expr = self.parse_power()?;
+        let mut expr = self.parse_unary()?;
 
         loop {
             let tok = self.peek();
@@ -121,6 +121,27 @@ impl Parser {
             Ok(lhs)
         }
     }
+    pub fn parse_unary(&mut self) -> Result<Expr, ParseError> {
+        let tok = self.peek().clone();
+
+        match tok.kind {
+            TokenKind::Plus | TokenKind::Minus => {
+                let op = tok.kind.clone();
+                let start = tok.span.start;
+                self.next();
+
+                let expr = self.parse_expr()?;
+                let end = tok.span.end;
+
+                Ok(Expr::Unary {
+                    op,
+                    operand: Box::new(expr),
+                    span: TokenSpan { start, end },
+                })
+            }
+            _ => self.parse_power(),
+        }
+    }
     pub fn parse_factor(&mut self) -> Result<Expr, ParseError> {
         let tok = self.peek().clone();
 
@@ -162,6 +183,11 @@ fn wrap_span(expr: Expr, start: usize, end: usize) -> Expr {
     match expr {
         Expr::Num { value, .. } => Expr::Num {
             value,
+            span: TokenSpan { start, end },
+        },
+        Expr::Unary { op, operand, .. } => Expr::Unary {
+            op,
+            operand,
             span: TokenSpan { start, end },
         },
         Expr::Binary { op, lhs, rhs, .. } => Expr::Binary {

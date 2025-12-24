@@ -6,6 +6,11 @@ pub enum Expr {
         value: i64,
         span: TokenSpan,
     },
+    Unary {
+        op: TokenKind,
+        operand: Box<Expr>,
+        span: TokenSpan,
+    },
     Binary {
         op: TokenKind,
         lhs: Box<Expr>,
@@ -18,6 +23,7 @@ impl Expr {
     pub(crate) fn span(&self) -> TokenSpan {
         match self {
             Expr::Num { span, .. } => *span,
+            Expr::Unary { span, .. } => *span,
             Expr::Binary { span, .. } => *span,
         }
     }
