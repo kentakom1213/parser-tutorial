@@ -10,7 +10,7 @@ pub enum TokenKind {
     Eof,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct TokenSpan {
     pub start: usize,
     pub end: usize,
