@@ -159,7 +159,7 @@ impl Parser {
 
                 // ident '(' expr ')'
                 let lparen = self.next();
-                if lparen.kind != TokenKind::LParen {
+                if lparen.kind != TokenKind::LParen || tok.span.end != lparen.span.start {
                     return Err(ParseError {
                         span: lparen.span,
                         message: "expected '(' after function name".to_string(),
