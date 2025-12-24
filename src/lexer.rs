@@ -78,6 +78,13 @@ impl<'a> Lexer<'a> {
                     span,
                 })
             }
+            '^' => {
+                let span = self.bump_with_span();
+                Ok(Token {
+                    kind: TokenKind::Caret,
+                    span,
+                })
+            }
             '(' => {
                 let span = self.bump_with_span();
                 Ok(Token {

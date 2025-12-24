@@ -74,7 +74,7 @@ impl Parser {
         Ok(expr)
     }
     pub fn parse_term(&mut self) -> Result<Expr, ParseError> {
-        let mut expr = self.parse_factor()?;
+        let mut expr = self.parse_power()?;
 
         loop {
             let tok = self.peek();
@@ -99,6 +99,27 @@ impl Parser {
         }
 
         Ok(expr)
+    }
+    pub fn parse_power(&mut self) -> Result<Expr, ParseError> {
+        let lhs = self.parse_factor()?;
+
+        if self.peek().kind == TokenKind::Caret {
+            let op = self.peek().kind.clone();
+            let start = lhs.span().start;
+            self.next();
+
+            let rhs = self.parse_power()?;
+            let end = rhs.span().end;
+
+            Ok(Expr::Binary {
+                op,
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+                span: TokenSpan { start, end },
+            })
+        } else {
+            Ok(lhs)
+        }
     }
     pub fn parse_factor(&mut self) -> Result<Expr, ParseError> {
         let tok = self.peek().clone();
