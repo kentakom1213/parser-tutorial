@@ -1,6 +1,6 @@
 use std::{iter::Peekable, str::CharIndices};
 
-use crate::{ParseError, Tok};
+use crate::{ParseError, Token, TokenKind, TokenSpan};
 
 pub struct Lexer<'a> {
     s: &'a str,
@@ -28,49 +28,90 @@ impl<'a> Lexer<'a> {
             self.bump();
         }
     }
-    pub fn next_tok(&mut self) -> Result<Tok, ParseError> {
+    fn bump_with_span(&mut self) -> TokenSpan {
+        let start = self.pos();
+        self.bump();
+        let end = self.pos();
+        TokenSpan { start, end }
+    }
+    pub fn next_tok(&mut self) -> Result<Token, ParseError> {
         // 空白をスキップ
         self.skip_ws();
 
         let pos = self.pos();
         let Some(b) = self.peek() else {
-            return Ok(Tok::Eof);
+            return Ok(Token {
+                kind: TokenKind::Eof,
+                span: TokenSpan {
+                    start: pos,
+                    end: pos,
+                },
+            });
         };
 
         match b {
             '+' => {
-                self.bump();
-                Ok(Tok::Plus)
+                let span = self.bump_with_span();
+                Ok(Token {
+                    kind: TokenKind::Plus,
+                    span,
+                })
             }
             '-' => {
-                self.bump();
-                Ok(Tok::Minus)
+                let span = self.bump_with_span();
+                Ok(Token {
+                    kind: TokenKind::Minus,
+                    span,
+                })
             }
             '*' => {
-                self.bump();
-                Ok(Tok::Star)
+                let span = self.bump_with_span();
+                Ok(Token {
+                    kind: TokenKind::Star,
+                    span,
+                })
             }
             '/' => {
-                self.bump();
-                Ok(Tok::Slash)
+                let span = self.bump_with_span();
+                Ok(Token {
+                    kind: TokenKind::Slash,
+                    span,
+                })
             }
             '(' => {
-                self.bump();
-                Ok(Tok::LParen)
+                let span = self.bump_with_span();
+                Ok(Token {
+                    kind: TokenKind::LParen,
+                    span,
+                })
             }
             ')' => {
-                self.bump();
-                Ok(Tok::RParen)
+                let span = self.bump_with_span();
+                Ok(Token {
+                    kind: TokenKind::RParen,
+                    span,
+                })
             }
             '0'..='9' => {
+                let start = self.pos();
                 let mut n = 0;
                 while let Some(c @ '0'..='9') = self.peek() {
                     self.bump();
                     n = n * 10 + (c as i64 - '0' as i64);
                 }
-                Ok(Tok::Num(n))
+                let end = self.pos();
+                Ok(Token {
+                    kind: TokenKind::Num(n),
+                    span: TokenSpan { start, end },
+                })
             }
-            _ => Err(ParseError::new(pos, "unexpected char")),
+            _ => Err(ParseError::new(
+                TokenSpan {
+                    start: pos,
+                    end: pos,
+                },
+                "unexpected char",
+            )),
         }
     }
 }

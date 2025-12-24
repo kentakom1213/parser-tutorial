@@ -1,13 +1,15 @@
+use crate::TokenSpan;
+
 #[derive(Debug, Clone)]
 pub struct ParseError {
-    pub(crate) pos: usize,
+    pub(crate) span: TokenSpan,
     pub(crate) message: String,
 }
 
 impl ParseError {
-    pub fn new(pos: usize, message: impl Into<String>) -> Self {
+    pub fn new(span: TokenSpan, message: impl Into<String>) -> Self {
         Self {
-            pos,
+            span,
             message: message.into(),
         }
     }
