@@ -39,6 +39,26 @@ impl<'a> Lexer<'a> {
                 self.bump();
                 Ok(Tok::Plus)
             }
+            '-' => {
+                self.bump();
+                Ok(Tok::Minus)
+            }
+            '*' => {
+                self.bump();
+                Ok(Tok::Star)
+            }
+            '/' => {
+                self.bump();
+                Ok(Tok::Slash)
+            }
+            '(' => {
+                self.bump();
+                Ok(Tok::LParen)
+            }
+            ')' => {
+                self.bump();
+                Ok(Tok::RParen)
+            }
             '0'..='9' => {
                 let mut n = 0;
                 while let Some(c @ '0'..='9') = self.peek() {
