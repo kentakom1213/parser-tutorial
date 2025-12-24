@@ -13,6 +13,9 @@ fn main() {
             return;
         }
     };
+
+    println!("{tokens:?}");
+
     let expr = match parse(tokens) {
         Ok(expr) => expr,
         Err(e) => {

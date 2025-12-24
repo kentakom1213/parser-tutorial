@@ -1,6 +1,7 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
     Num(i64),
+    Ident(String),
     Plus,
     Minus,
     Star,

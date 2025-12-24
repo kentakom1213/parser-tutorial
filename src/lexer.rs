@@ -112,6 +112,25 @@ impl<'a> Lexer<'a> {
                     span: TokenSpan { start, end },
                 })
             }
+            'a'..='z' | 'A'..='Z' | '_' => {
+                let start = self.pos();
+                let mut name = String::new();
+
+                while let Some(c) = self.peek() {
+                    if c.is_alphanumeric() || c == '_' {
+                        name.push(c);
+                        self.bump();
+                    } else {
+                        break;
+                    }
+                }
+
+                let end = self.pos();
+                Ok(Token {
+                    kind: TokenKind::Ident(name),
+                    span: TokenSpan { start, end },
+                })
+            }
             _ => Err(ParseError::new(
                 TokenSpan {
                     start: pos,

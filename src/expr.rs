@@ -17,6 +17,11 @@ pub enum Expr {
         rhs: Box<Expr>,
         span: TokenSpan,
     },
+    Call {
+        name: String,
+        arg: Box<Expr>,
+        span: TokenSpan,
+    },
 }
 
 impl Expr {
@@ -25,6 +30,7 @@ impl Expr {
             Expr::Num { span, .. } => *span,
             Expr::Unary { span, .. } => *span,
             Expr::Binary { span, .. } => *span,
+            Expr::Call { span, .. } => *span,
         }
     }
 }

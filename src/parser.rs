@@ -84,7 +84,7 @@ impl Parser {
                     let start = expr.span().start;
                     self.next();
 
-                    let rhs = self.parse_factor()?;
+                    let rhs = self.parse_primary()?;
                     let end = rhs.span().end;
 
                     expr = Expr::Binary {
@@ -101,7 +101,7 @@ impl Parser {
         Ok(expr)
     }
     pub fn parse_power(&mut self) -> Result<Expr, ParseError> {
-        let lhs = self.parse_factor()?;
+        let lhs = self.parse_primary()?;
 
         if self.peek().kind == TokenKind::Caret {
             let op = self.peek().kind.clone();
@@ -142,7 +142,7 @@ impl Parser {
             _ => self.parse_power(),
         }
     }
-    pub fn parse_factor(&mut self) -> Result<Expr, ParseError> {
+    pub fn parse_primary(&mut self) -> Result<Expr, ParseError> {
         let tok = self.peek().clone();
 
         match tok.kind {
@@ -151,6 +151,37 @@ impl Parser {
                 Ok(Expr::Num {
                     value: n,
                     span: tok.span,
+                })
+            }
+            TokenKind::Ident(name) => {
+                let start = tok.span.start;
+                self.next();
+
+                // ident '(' expr ')'
+                let lparen = self.next();
+                if lparen.kind != TokenKind::LParen {
+                    return Err(ParseError {
+                        span: lparen.span,
+                        message: "expected '(' after function name".to_string(),
+                    });
+                }
+
+                let arg = self.parse_expr()?;
+
+                let rparen = self.next();
+                if rparen.kind != TokenKind::RParen {
+                    return Err(ParseError {
+                        span: rparen.span,
+                        message: "expected '('".to_string(),
+                    });
+                }
+
+                let end = rparen.span.end;
+
+                Ok(Expr::Call {
+                    name,
+                    arg: Box::new(arg),
+                    span: TokenSpan { start, end },
                 })
             }
             TokenKind::LParen => {
@@ -163,7 +194,7 @@ impl Parser {
                 if rparen.kind != TokenKind::RParen {
                     return Err(ParseError {
                         span: rparen.span,
-                        message: "expected `)`".to_string(),
+                        message: "expected ')'".to_string(),
                     });
                 }
 
@@ -194,6 +225,11 @@ fn wrap_span(expr: Expr, start: usize, end: usize) -> Expr {
             op,
             lhs,
             rhs,
+            span: TokenSpan { start, end },
+        },
+        Expr::Call { name, arg, .. } => Expr::Call {
+            name,
+            arg,
             span: TokenSpan { start, end },
         },
     }
