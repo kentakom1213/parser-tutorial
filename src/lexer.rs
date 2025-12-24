@@ -1,24 +1,27 @@
+use std::{iter::Peekable, str::CharIndices};
+
 use crate::{ParseError, Tok};
 
 pub struct Lexer<'a> {
     s: &'a str,
-    i: usize,
+    iter: Peekable<CharIndices<'a>>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
-        Self { s: input, i: 0 }
+        Self {
+            s: input,
+            iter: input.char_indices().peekable(),
+        }
     }
-    pub fn pos(&self) -> usize {
-        self.i
+    pub fn pos(&mut self) -> usize {
+        self.iter.peek().map(|(i, _)| *i).unwrap_or(self.s.len())
     }
-    pub fn peek(&self) -> Option<char> {
-        self.s[self.i..].chars().next()
+    pub fn peek(&mut self) -> Option<char> {
+        self.iter.peek().map(|(_, c)| *c)
     }
     pub fn bump(&mut self) -> Option<char> {
-        let c = self.peek()?;
-        self.i += c.len_utf8();
-        Some(c)
+        self.iter.next().map(|(_, c)| c)
     }
     pub fn skip_ws(&mut self) {
         while matches!(self.peek(), Some(c) if c.is_whitespace()) {
