@@ -26,6 +26,9 @@ impl<'a> Lexer<'a> {
         }
     }
     pub fn next_tok(&mut self) -> Result<Tok, ParseError> {
+        // 空白をスキップ
+        self.skip_ws();
+
         let pos = self.pos();
         let Some(b) = self.peek() else {
             return Ok(Tok::Eof);
